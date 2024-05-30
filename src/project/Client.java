@@ -17,10 +17,12 @@ import lombok.Setter;
 public class Client{
 	
 	private Client mContext;
+	
 	// 프레임 창
 	private LoginFrame loginFrame;
 	private WaitingRoomFrame waitingRoonFrame;
 	private NewRoomMake newRoomMake;
+	private ChatFrame chatFrame;
 	
 	private JList<String> friendsList;
 	private JList<String> roomList;
@@ -28,6 +30,7 @@ public class Client{
 	private Vector<String> friendsIdList = new Vector<>();
 	private Vector<String> roomIdList = new Vector<>();
 
+	// 소켓, 입출력 장치
 	private Socket socket;
 	private PrintWriter writer;
 	private BufferedReader reader;
@@ -64,19 +67,13 @@ public class Client{
 	private void spendId() {
 		
 		writer.println(userId);
-		
 	}
 	
-
-	// 아이디를 보내기 위한 메서드
-	public void spendRoom() {
-		
-		writer.println("newRooms/" + roomsId);
-		
+	// 방이름을 보내기 위한 메서드
+	private void spendRoom() {
+		writer.println(roomsId);
 	}
 
-
-	
 	private void readThread() {
 		
 		new Thread(() -> {
@@ -105,10 +102,12 @@ public class Client{
 			newFriends();
 		}else if(protocol.equals("ConnectedUser")) {
 			connectedUser();
-		}else if(protocol.equals("newRooms")) {
-			newRooms();
-		}else if(protocol.equals("ConnectedRooms")) {
-			connectedRooms();
+		}else if(protocol.equals("MadeRoom")) {
+			madeRoom();
+		}else if(protocol.equals("NewRoom")) {
+			newRoom();
+		}else if(protocol.equals("MakeRoom")) {
+			makeRoom();
 		}
 	}
 	
@@ -117,22 +116,10 @@ public class Client{
 		friendsList.setListData(friendsIdList);
 	}
 	
-	private void connectedRooms() {
-		friendsIdList.add(from);
-		friendsList.setListData(friendsIdList);
-	}
-
 	public void newFriends() {
 		if(!from.equals(this.userId)) {
 			friendsIdList.add(from);
 			friendsList.setListData(friendsIdList);
-		}
-	}
-	
-	public void newRooms() {
-		if(!from.equals(this.roomsId)) {
-			roomIdList.add(from);
-			roomList.setListData(roomIdList);
 		}
 	}
 	
@@ -141,6 +128,25 @@ public class Client{
 		roomList = waitingRoonFrame.getRoomList();
 	}
 	
+	private void myRoom() {
+		roomIdList.add(from);
+		roomList.setListData(roomIdList);
+	}
+	
+
+	public void makeRoom() {
+		roomsId = from;
+	}
+	
+	public void newRoom() {
+		roomIdList.add(from);
+		roomList.setListData(roomIdList);
+	}
+	
+	public void madeRoom() {
+		roomIdList.add(from);
+			roomList.setListData(roomIdList);
+	}
 	
 	public static void main(String[] args) {
 		

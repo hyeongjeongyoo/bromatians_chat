@@ -71,6 +71,8 @@ public class LoginMessage extends JFrame{
 			public void mouseClicked(MouseEvent e) {
 				setVisible(false);
 				System.out.println("접속성공");
+				
+				
 			}
 		});
 	}

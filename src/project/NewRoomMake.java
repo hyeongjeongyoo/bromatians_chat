@@ -88,11 +88,11 @@ public class NewRoomMake extends JFrame{
 	public void addEventListener() {
 		okBtn.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mousePressed(MouseEvent e) {
 				setVisible(false);
 				System.out.println("방만들기 성공");
-				mContext.setRoomsId(idRoomName.getText());
-				mContext.spendRoom();
+				String roomName = idRoomName.getText();
+				mContext.getWriter().println("MakeRoom/" + roomName);
 			}
 		});
 	}

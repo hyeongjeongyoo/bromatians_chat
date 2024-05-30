@@ -139,7 +139,6 @@ public class LoginFrame extends JFrame {
 			backgroundLogin = new JLabel(new ImageIcon("img/loginMsg.jpg"));
 			okBtn = new JLabel(new ImageIcon("img/okBtn.jpg"));
 			idName = new JLabel(id + " 님 환영합니다 !");
-
 			
 			setTitle("Welcome");
 			setSize(280, 190);
@@ -155,12 +154,12 @@ public class LoginFrame extends JFrame {
 			setLocationRelativeTo(null); 	// 가운데 배치
 			setVisible(true);
 			
-			backgroundLogin.add(okBtn);
+			add(okBtn);
 			okBtn.setSize(67,27);
 			okBtn.setLocation(100, 110);
 			okBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
-			backgroundLogin.add(idName);
+			add(idName);
 			idName.setFont(font);
 			idName.setSize(300, 50);
 			idName.setLocation(70, 35);

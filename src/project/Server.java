@@ -14,90 +14,94 @@ import javax.swing.JTextArea;
 import lombok.Getter;
 import lombok.Setter;
 
-
 public class Server {
-	
+
+	// 접속한 유저
 	private Vector<ConnectedUser> connectedUsers = new Vector<>();
+
+	// 방
 	private Vector<MyRoom> myRooms = new Vector<>();
-	
+
 	private ServerFrame serverFrame;
 	LoginFrame loginFrame;
-	
+
 	private String userId;
 	private String roomId;
 
 	private JTextArea mainBoard;
-	
+
 	// 포트 번호 지정
 	private static final int PORT = 10001;
-	
+
 	// 소켓 생성
 	private ServerSocket serverSocket;
 	private Socket socket;
-	
+
 	private PrintWriter writer;
 	private BufferedReader reader;
-	
+
 	// 프로토콜
 	private String protocol;
 	private String from;
 	private String message;
-	
+
+	private boolean roomCheck;
+
 	public Server() {
 		serverFrame = new ServerFrame(this);
+		roomCheck = true;
 		mainBoard = serverFrame.getMainBoard();
 		serverInfo("[서버 입장]");
 		startServer();
-	
 	}
-	
+
 	public void startServer() {
 		try {
 			serverSocket = new ServerSocket(PORT);
+
 			connectClient();
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// 서버 대기
 	private void connectClient() {
-		
+
 		new Thread(() -> {
-			
-			while(true) {
+
+			while (true) {
 				try {
 					socket = serverSocket.accept();
-					//serverInfo(userId + "님이 접속하셨습니다 !");
-					
+					// serverInfo(userId + "님이 접속하셨습니다 !");
+
 					ConnectedUser user = new ConnectedUser(socket);
+					// MyRoom room = new MyRoom(roomId, user);
 					// user.start();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-			
+
 		}).start();
-		
+
 	}
 
 	private void broadCast(String msg) {
-		for(int i = 0; i < connectedUsers.size(); i++) {
+		for (int i = 0; i < connectedUsers.size(); i++) {
 			ConnectedUser user = connectedUsers.elementAt(i);
 			user.getWriter().println(msg);
 		}
 	}
-	
-	// 보낸 아이디를 받기 위한 메서드
-	private void receiveId() {
+
+	private void receiveRoom() {
 		try {
-			userId = reader.readLine();
+			roomId = reader.readLine();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// 서버 창에 띄우는 알림
 	public void serverInfo(String str) {
 		try {
@@ -106,86 +110,79 @@ public class Server {
 			e.printStackTrace();
 		}
 	}
-	
-	// 보낸 방이름을 받기 위한 메서드
-	private void receiveRoomName() {
-		try {
-			roomId = reader.readLine();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-
 
 	// 여러명의 친구들
 	@Getter
 	@Setter
-	private class ConnectedUser{
-		
+	private class ConnectedUser {
+
 		private Socket socket;
-		
+
 		private PrintWriter writer;
 		private BufferedReader reader;
-		
+
 		private String userId;
-		private String roomId;
-		
+		private String myRoomName;
+
 		public ConnectedUser(Socket socket) {
 			this.socket = socket;
 			connectIO();
 		}
-		
-
 
 		private void connectIO() {
 			try {
-				writer = new PrintWriter(socket.getOutputStream(),true);
+				writer = new PrintWriter(socket.getOutputStream(), true);
 				reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				
+
 				sendInfo();
 				readThread();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		private void sendInfo() {
 			try {
 				userId = reader.readLine();
-				serverInfo(userId + " 님 접속하셨습니다 !");
-				
+				serverInfo("[" + userId + "]" + " 님이 접속하셨습니다 !");
+
 				newFriends();
 				connectedUser();
+				madeRoom();
+				//myRoomName = reader.readLine();
 				
+
+				//makeRoom();
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+
 		}
-		
-		
+
 		private void connectedUser() {
-			for(int i = 0; i < connectedUsers.size(); i++) {
+			for (int i = 0; i < connectedUsers.size(); i++) {
 				ConnectedUser user = connectedUsers.elementAt(i);
 				writer.println("ConnectedUser/" + user.userId);
 			}
 		}
-		
+
 		public void newFriends() {
 			connectedUsers.add(this);
 			broadCast("newFriends/" + userId);
 		}
-		
-		public void newRooms() {
-			connectedUsers.add(this);
-			broadCast("newRooms/" + roomId);
+		public void madeRoom() {
+			for (int i = 0; i < myRooms.size(); i++) {
+				MyRoom myRoom = myRooms.elementAt(i);
+				writer.println("MadeRoom/" + myRoom.roomName);
+			}
 		}
-		
+
 		private void readThread() {
-			
+
 			new Thread(() -> {
-				
-				while(true) {
+
+				while (true) {
 					try {
 						String str = reader.readLine();
 						checkProtocol(str);
@@ -193,45 +190,54 @@ public class Server {
 						e.printStackTrace();
 					}
 				}
-				
+
 			}).start();
-			
+
 		}
-		
+
 		private void checkProtocol(String str) {
 			StringTokenizer tokenizer = new StringTokenizer(str, "/");
-			
+
 			protocol = tokenizer.nextToken();
 			from = tokenizer.nextToken();
-			
-			if(protocol.equals("newFriends")) {
-				newFriends();
-			}else if(protocol.equals("newRooms")) {
-				newRooms();
+
+			if (protocol.equals("MakeRoom")) {
+				makeRoom();
 			}
 		}
+
+		public void makeRoom() {
+
+				myRoomName = from;
+				MyRoom myRoom = new MyRoom(from, this);
+				myRooms.add(myRoom);
+
+				newRoom();
+				writer.println("MakeRoom/" + from);
+				serverInfo( userId + " 님이 " + "[ " + from + " ]" + " 방을 만들었습니다 !");
+		}
+
 		
-		
+
+		public void newRoom() {
+			broadCast("NewRoom/" + from);
+		}
+
 	}// end of ConnectedUser class
-	
-	
-	@Getter
-	@Setter
+
+	// 방
 	private class MyRoom {
 
 		private String roomName;
-		// myRoom에 들어온 사람들의 정보가 담김.
+
 		private Vector<ConnectedUser> myRoom = new Vector<>();
 
 		public MyRoom(String roomName, ConnectedUser connectedUser) {
 			this.roomName = roomName;
 			this.myRoom.add(connectedUser);
-			connectedUser.setRoomId(roomName);
+			connectedUser.myRoomName = roomName;
 		}
 
-		/**
-		 * 방에 있는 사람들에게 출력
-		 */
 		private void roomBroadCast(String msg) {
 			for (int i = 0; i < myRoom.size(); i++) {
 				ConnectedUser user = myRoom.elementAt(i);
@@ -243,15 +249,11 @@ public class Server {
 		private void addUser(ConnectedUser connectedUser) {
 			myRoom.add(connectedUser);
 		}
-		
-		
-	}
-	
-	
+
+	}// end of MyRoom class
+
 	public static void main(String[] args) {
 		new Server();
 	}
-
-	
 
 }// end of class
