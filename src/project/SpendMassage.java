@@ -21,7 +21,7 @@ import lombok.Setter;
 @Setter
 public class SpendMassage extends JFrame{
 
-	private WaitingRoonFrame mContext;
+	private WaitingRoomFrame mContext;
 	
 	// background
 	private JLabel roomBackground;

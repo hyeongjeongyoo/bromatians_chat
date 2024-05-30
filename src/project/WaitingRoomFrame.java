@@ -2,14 +2,10 @@ package project;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.Font;
-import java.awt.ScrollPane;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Vector;
@@ -19,7 +15,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.LineBorder;
 
@@ -28,10 +24,12 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class WaitingRoonFrame extends JFrame{
+public class WaitingRoomFrame extends JFrame{
 	
-	WaitingRoonFrame waitingRoonFrame;
-	NewRoomMake newRoomMessage;
+	Client mContext;
+	
+	WaitingRoomFrame waitingRoonFrame;
+	NewRoomMake newRoomMake;
 	SpendMassage spendMassage;
 	
 	private Socket socket;
@@ -48,13 +46,11 @@ public class WaitingRoonFrame extends JFrame{
 	
 	// 접속자
 	private JPanel friendsPanel;
-	private JTextArea friendsBoard;
-	private ScrollPane friendsscroll;
+	private JScrollPane friendsscroll;
 	
 	// 방
 	private JPanel roomsPanel;
-	private JTextArea roomsBoard;
-	private ScrollPane roomsscroll;
+	private JScrollPane roomsscroll;
 	
 	// 방만들기, 쪽지, 입장 아이콘
 	private JLabel newRoom;
@@ -66,10 +62,12 @@ public class WaitingRoonFrame extends JFrame{
 	// 방만들기, 쪽지, 입장 기능
 	private JTextField roomName;
 	private String roomId;
-	private String Usermsg;
+	private String userMsg;
+	private String userId;
 
 
-	public WaitingRoonFrame() {
+	public WaitingRoomFrame(Client mContext) {
+		this.mContext = mContext;
 		initData();
 		setInitData();
 		addEventListener();
@@ -79,12 +77,7 @@ public class WaitingRoonFrame extends JFrame{
 		waitBackground = new JLabel(new ImageIcon("img/waitingBg.jpg"));
 		
 		friendsPanel = new JPanel();
-		friendsBoard = new JTextArea();
 		roomsPanel = new JPanel();
-		roomsBoard = new JTextArea();
-
-		friendsscroll = new ScrollPane();
-		roomsscroll = new ScrollPane();
 		
 		newRoom = new JLabel(new ImageIcon("img/newRoom.png"));
 		message = new JLabel(new ImageIcon("img/msg.png"));
@@ -92,6 +85,8 @@ public class WaitingRoonFrame extends JFrame{
 		
 		friendsList = new JList<>();
 		roomList = new JList<>();
+		friendsscroll = new JScrollPane(friendsList);
+		roomsscroll = new JScrollPane(roomList);
 		
 		setTitle("WAITING ROOM");
 		setSize(400, 666);
@@ -102,32 +97,25 @@ public class WaitingRoonFrame extends JFrame{
 	}
 	
 	public void setInitData() {
-		setLayout(null);
-		setResizable(false); 			// 사이즈 조절 불가
-		setLocationRelativeTo(null); 	// 가운데 배치
-		setVisible(true);
+
 		
 		// 메인패널 컴포넌트
+		add(friendsPanel);
 		friendsPanel.setBorder(new LineBorder(Color.BLACK, 3));
 		friendsPanel.setBounds(15, 170, 360, 170);
+		// friendsPanel.setPreferredSize(360, 170);
 		friendsPanel.setBackground(Color.WHITE);
-
-		friendsBoard.setEnabled(false);
-		friendsPanel.add(friendsscroll);
-		friendsscroll.setBounds(15, 110, 350, 155);
-		friendsscroll.add(friendsBoard);
-		waitBackground.add(friendsPanel);
-
 		
+		friendsPanel.add(friendsscroll);
+		friendsscroll.setBounds(20, 200, 400, 300);
+
+		add(roomsPanel);
 		roomsPanel.setBorder(new LineBorder(Color.BLACK, 3));
 		roomsPanel.setBounds(15, 405, 360, 170);
 		roomsPanel.setBackground(Color.WHITE);
 
-		roomsBoard.setEnabled(false);
 		roomsPanel.add(roomsscroll);
 		roomsscroll.setBounds(15, 415, 350, 155);
-		roomsscroll.add(roomsBoard);
-		waitBackground.add(roomsPanel);
 		
 		waitBackground.add(newRoom);
 		newRoom.setSize(ICON_WIDTH,ICON_HEIGHT);
@@ -143,6 +131,11 @@ public class WaitingRoonFrame extends JFrame{
 		goRoom.setSize(ICON_WIDTH,ICON_HEIGHT);
 		goRoom.setLocation(345, 365);
 		goRoom.setCursor(new Cursor(Cursor.HAND_CURSOR)); // 마우스 커서 모양 변경
+		
+		setLayout(null);
+		setResizable(false); 			// 사이즈 조절 불가
+		setLocationRelativeTo(null); 	// 가운데 배치
+		setVisible(true);
 	}
 	
 	public void addEventListener() {
@@ -150,18 +143,19 @@ public class WaitingRoonFrame extends JFrame{
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				System.out.println("방만들기 아이콘 클릭");
-				new NewRoomMake(roomId);
+				new NewRoomMake(mContext);
 			}
 		});
 		message.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				System.out.println("쪽지 아이콘 클릭");
-				new SpendMassage(Usermsg);
+				new SpendMassage(userMsg);
 				// String makeRoomName = roomName.getText();
 			}
 		});
 	}
 	
+
 
 }

@@ -94,12 +94,12 @@ public class LoginFrame extends JFrame {
 	public void addEventListener() {
 		logoBtn.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void mousePressed(MouseEvent e) {
 				mContext.setUserId(id.getText());
 				
 				if(mContext.getUserId().length() < 6) {
 					new LoginMessage(mContext.getUserId());
-					mContext.startClient();
+					
 				} else {
 					// TODO 입력 초과시 이미지 추가
 				}
@@ -124,6 +124,7 @@ public class LoginFrame extends JFrame {
 		private JLabel idName;
 		String id;
 		
+		
 		Font font = new Font("Noto Sans KR", Font.BOLD, 14);
 		
 		public LoginMessage(String id) {
@@ -138,6 +139,7 @@ public class LoginFrame extends JFrame {
 			backgroundLogin = new JLabel(new ImageIcon("img/loginMsg.jpg"));
 			okBtn = new JLabel(new ImageIcon("img/okBtn.jpg"));
 			idName = new JLabel(id + " 님 환영합니다 !");
+
 			
 			setTitle("Welcome");
 			setSize(280, 190);
@@ -167,11 +169,14 @@ public class LoginFrame extends JFrame {
 		public void addEventListener() {
 			okBtn.addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(MouseEvent e) {
+				public void mousePressed(MouseEvent e) {
 					setVisible(false);
 					System.out.println("접속성공");
 					loginFrame.setVisible(false);
-					new WaitingRoonFrame();
+					WaitingRoomFrame waitingRoomFrame = new WaitingRoomFrame(mContext);
+					mContext.setWaitingRoonFrame(waitingRoomFrame);
+					mContext.addComponent();
+					mContext.startClient();
 				}
 			});
 		}

@@ -22,7 +22,8 @@ import lombok.Setter;
 @Setter
 public class NewRoomMake extends JFrame{
 	
-	private WaitingRoonFrame mContext;
+	private Client mContext;
+	WaitingRoomFrame waitingRoonFrame;
 	
 	// background
 	private JLabel roomBackground;
@@ -46,8 +47,8 @@ public class NewRoomMake extends JFrame{
 	
 	Font font = new Font("Noto Sans KR", Font.BOLD, 14);
 	
-	public NewRoomMake(String roomId) {
-		this.roomId = roomId;
+	public NewRoomMake(Client mContext) {
+		this.mContext = mContext;
 		initData();
 		setInitLayout();
 		addEventListener();
@@ -57,6 +58,7 @@ public class NewRoomMake extends JFrame{
 		roomBackground = new JLabel(new ImageIcon("img/newRoomMsg.jpg"));
 		okBtn = new JLabel(new ImageIcon("img/okBtn.jpg"));
 		idRoomName = new JTextField("방제목",10);
+		
 		
 		setTitle("MAKE ROOM");
 		setSize(280, 190);
@@ -89,14 +91,12 @@ public class NewRoomMake extends JFrame{
 			public void mouseClicked(MouseEvent e) {
 				setVisible(false);
 				System.out.println("방만들기 성공");
+				mContext.setRoomsId(idRoomName.getText());
+				mContext.spendRoom();
 			}
 		});
 	}
-
-	// 방이름을 보내기 위한 메서드
-	private void spendRoomName() {
-		writer.println(roomId);
-	}
 	
+
 
 }
