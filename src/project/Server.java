@@ -11,9 +11,10 @@ import java.util.Vector;
 
 import javax.swing.JTextArea;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
+@Data
 public class Server {
 
 	// 접속한 유저
@@ -226,6 +227,7 @@ public class Server {
 	}// end of ConnectedUser class
 
 	// 방
+	@Data
 	private class MyRoom {
 
 		private String roomName;

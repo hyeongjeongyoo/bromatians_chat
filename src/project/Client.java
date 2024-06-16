@@ -9,11 +9,11 @@ import java.util.Vector;
 
 import javax.swing.JList;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Data
 public class Client{
 	
 	private Client mContext;
@@ -65,7 +65,6 @@ public class Client{
 	
 	// 아이디를 보내기 위한 메서드
 	private void spendId() {
-		
 		writer.println(userId);
 	}
 	

@@ -11,9 +11,9 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 public class LoginFrame extends JFrame {
 	
 	private Client mContext;
